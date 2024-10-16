@@ -1,41 +1,33 @@
 from flask import Flask, jsonify, request
+from middleware import auth1
 from flask_httpauth import HTTPTokenAuth
 
+
+auth = HTTPTokenAuth(scheme='Bearer')
 app = Flask(__name__)
 
-# Token authentication
-auth = HTTPTokenAuth(scheme='Bearer')
 
-# Mock data for users and tokens
 users = [
     {"id": 1, "name": "John Doe", "email": "john@example.com"},
     {"id": 2, "name": "Jane Doe", "email": "jane@example.com"}
 ]
-
 tokens = {
     "mysecrettoken": "john",
     "anothertoken": "jane"
 }
 
-# Authentication check
-# Authorization: Bearer mysecrettoken
-
 
 @auth.verify_token
 def verify_token(token):
     if token in tokens:
-        return tokens[token]  # return the username associated with the token
+        return tokens[token]
     return None
-
-# 1. Get all users (requires authentication)
 
 
 @app.route('/users', methods=['GET'])
 @auth.login_required
 def get_users():
     return jsonify(users)
-
-# 2. Get user by ID (requires authentication)
 
 
 @app.route('/users/<int:id>', methods=['GET'])
@@ -46,8 +38,6 @@ def get_user(id):
         return jsonify(user)
     return jsonify({'error': 'User not found'}), 404
 
-# 3. Create a new user (requires authentication)
-
 
 @app.route('/users', methods=['POST'])
 @auth.login_required
@@ -56,8 +46,6 @@ def create_user():
     new_user['id'] = len(users) + 1
     users.append(new_user)
     return jsonify(new_user), 201
-
-# 4. Update user by ID (requires authentication)
 
 
 @app.route('/users/<int:id>', methods=['PUT'])
@@ -69,8 +57,6 @@ def update_user(id):
 
     user.update(request.json)
     return jsonify(user)
-
-# 5. Delete user by ID (requires authentication)
 
 
 @app.route('/users/<int:id>', methods=['DELETE'])
